@@ -5,7 +5,11 @@ import { NavBar } from "@/components/ui/tubelight-navbar";
 import { HoverSlider, TextStaggerHover } from "@/components/ui/animated-slideshow";
 import { CircularRevealHeading } from "@/components/ui/circular-reveal-heading";
 import { Button } from "@/components/ui/rainbow-borders-button";
+import { ZoomParallax } from "@/components/ui/zoom-parallax";
+import { ProblemStatement } from "@/components/ProblemStatement";
+import { ProblemScreen } from "@/components/ProblemScreen";
 import { useState, useEffect, useRef } from "react";
+import { HorizontalScrollCarousel } from "@/components/ui/horizontal-scroll-carousel";
 
 export default function Home() {
   const [typewriterText, setTypewriterText] = useState("");
@@ -15,8 +19,25 @@ export default function Home() {
   // Section 4 state
   const [showSection4, setShowSection4] = useState(false);
   const [circularRevealMoved, setCircularRevealMoved] = useState(false);
+  // Problem Screen state
+  const [showProblemScreen, setShowProblemScreen] = useState(false);
+  // Scroll resistance for problem screen
+  const [problemScreenScrollResistance, setProblemScreenScrollResistance] = useState(false);
+  // Scroll resistance for circular reveal section
+  const [circularRevealScrollResistance, setCircularRevealScrollResistance] = useState(false);
   // Section 5 state
   const [showSection5, setShowSection5] = useState(false);
+  // Center-out blackout transition state
+  const [played, setPlayed] = useState(false);
+  const [playedReverse, setPlayedReverse] = useState(false);
+  const [locking, setLocking] = useState(false);
+  const [gapStart, setGapStart] = useState<number>(0);
+  const [marqueeVisible, setMarqueeVisible] = useState(true);
+  const [marqueeOpacity, setMarqueeOpacity] = useState(1);
+  const marqueeRef = useRef<HTMLDivElement>(null);
+  const section1Top = useRef<number>(0);
+  const section2Top = useRef<number>(0);
+  const section3Top = useRef<number>(0);
   // Refs to avoid dependency array issues
   const showTypewriterRef = useRef(showTypewriter);
   const currentIndexRef = useRef(0);
@@ -30,10 +51,180 @@ export default function Home() {
   }, [showTypewriter]);
 
 
+  // Set section anchors once layout is known
+  useEffect(() => {
+    const s1 = document.getElementById('section-1')?.offsetTop ?? 0;
+    const s2 = document.getElementById('section-2')?.offsetTop ?? window.innerHeight;
+    const s3 = document.getElementById('section-3')?.offsetTop ?? window.innerHeight * 2;
+    section1Top.current = s1;
+    section2Top.current = s2;
+    section3Top.current = s3;
+  }, []);
+
+  // Measure marquee height and set initial gap
+  useEffect(() => {
+    const measure = () => {
+      if (!marqueeRef.current) return;
+      const h = marqueeRef.current.getBoundingClientRect().height;
+      const start = Math.max(0, (window.innerHeight - h) / 2);
+      setGapStart(start);
+      document.documentElement.style.setProperty('--gap', `${start}px`);
+    };
+    
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (marqueeRef.current) ro.observe(marqueeRef.current);
+    window.addEventListener('resize', measure);
+    
+    return () => { 
+      ro.disconnect(); 
+      window.removeEventListener('resize', measure); 
+    };
+  }, []);
+
+  // Forward transition: Section 2 → Section 3
+  useEffect(() => {
+    const onScrollForward = () => {
+      if (locking || played) return;
+      const y = window.scrollY;
+      const windowHeight = window.innerHeight;
+
+      // Forward threshold: user has scrolled past Section 2's midpoint
+      if (y >= section2Top.current + windowHeight * 0.5) {
+        setLocking(true);
+
+        // lock body without jumping
+        const scrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+
+        // start center-out expansion
+        requestAnimationFrame(() => {
+          document.documentElement.style.setProperty('--gap', '0px');
+        });
+
+        // after animation completes, unlock and jump to Section 3
+        const done = setTimeout(() => {
+          // fade out marquee
+          setMarqueeVisible(false);
+          
+          // unlock
+          document.body.style.position = '';
+          document.body.style.top = '';
+          document.body.style.left = '';
+          document.body.style.right = '';
+          document.body.style.width = '';
+          // restore scroll position before programmatic jump
+          window.scrollTo(0, scrollY);
+          // now jump to section 3 anchor
+          window.scrollTo({ top: section3Top.current, behavior: 'instant' as ScrollBehavior });
+          setLocking(false);
+          setPlayed(true);
+        }, 1200); // matches transition
+
+        return () => clearTimeout(done);
+      }
+    };
+
+    window.addEventListener('scroll', onScrollForward, { passive: true });
+    return () => window.removeEventListener('scroll', onScrollForward);
+  }, [played, locking, gapStart]);
+
+  // Reverse transition: Section 2 → Section 1
+  useEffect(() => {
+    const onScrollReverse = () => {
+      if (locking || playedReverse) return;
+      const y = window.scrollY;
+      const windowHeight = window.innerHeight;
+
+      // Reverse threshold: enter upper half of Section 2 while scrolling up
+      if (y <= section2Top.current + windowHeight * 0.5 && y > section1Top.current && played) {
+        setLocking(true);
+        const currentY = window.scrollY;
+
+        // Lock body
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${currentY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+
+        // Retract black cover from full to center band
+        requestAnimationFrame(() => {
+          document.documentElement.style.setProperty('--gap', `${gapStart}px`);
+        });
+
+        // End after same duration as forward (1.2s)
+        const done = setTimeout(() => {
+          // Unlock body
+          document.body.style.position = '';
+          document.body.style.top = '';
+          document.body.style.left = '';
+          document.body.style.right = '';
+          document.body.style.width = '';
+          window.scrollTo(0, currentY);
+
+          // Snap to Section 1 and restore initial UI
+          window.scrollTo({ top: section1Top.current, behavior: 'instant' as ScrollBehavior });
+
+          // UI visibility resets
+          setMarqueeVisible(false); // Hide OPEF marquee
+          setShowTypewriter(true);  // Show hero headline
+
+          setLocking(false);
+          setPlayedReverse(true);
+          setPlayed(false); // Reset for next forward transition
+        }, 1200);
+
+        return () => clearTimeout(done);
+      }
+    };
+
+    window.addEventListener('scroll', onScrollReverse, { passive: true });
+    return () => window.removeEventListener('scroll', onScrollReverse);
+  }, [playedReverse, locking, gapStart, played]);
+
+  // Section visibility logic
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
+      
+      // Scroll resistance logic for problem screen
+      if (showProblemScreen && !problemScreenScrollResistance) {
+        const problemScreenStart = windowHeight * 3.0;
+        const problemScreenEnd = windowHeight * 5.5;
+        const scrollProgress = (scrollY - problemScreenStart) / (problemScreenEnd - problemScreenStart);
+        
+        // Enable resistance when user starts scrolling past 20% of problem screen
+        if (scrollProgress > 0.2) {
+          setProblemScreenScrollResistance(true);
+          // Disable resistance after 2 seconds
+          setTimeout(() => {
+            setProblemScreenScrollResistance(false);
+          }, 2000);
+        }
+      }
+
+      // Scroll resistance logic for circular reveal section
+      if (showSection4 && !circularRevealScrollResistance) {
+        const circularRevealStart = windowHeight * 5.5;
+        const circularRevealEnd = windowHeight * 6.5;
+        const scrollProgress = (scrollY - circularRevealStart) / (circularRevealEnd - circularRevealStart);
+        
+        // Enable resistance when user starts scrolling past 15% of circular reveal section
+        if (scrollProgress > 0.15) {
+          setCircularRevealScrollResistance(true);
+          // Disable resistance after 4 seconds (longer for reading time)
+          setTimeout(() => {
+            setCircularRevealScrollResistance(false);
+          }, 4000);
+        }
+      }
+
       
       if (scrollY <= windowHeight * 0.5) {
         // Section 1 - Typewriter
@@ -41,36 +232,75 @@ export default function Home() {
         setShowSlideshow(false);
         setShowSection4(false);
         setShowSection5(false);
-      } else if (scrollY > windowHeight * 0.5 && scrollY < windowHeight * 1.5) {
-        // Section 2 - OPEF
+        setMarqueeVisible(false); // Hide marquee in section 1
+        // Reset reverse transition when back in section 1
+        if (playedReverse) {
+          setPlayedReverse(false);
+        }
+      } else if (scrollY > windowHeight * 0.5 && scrollY < windowHeight * 1.8) {
+        // Section 2 - OPEF (extended for smoother transition)
         setShowTypewriter(false);
         setShowSlideshow(false);
         setShowSection4(false);
         setShowSection5(false);
-      } else if (scrollY > windowHeight * 1.5 && scrollY < windowHeight * 2.5) {
-        // Section 3 - Slideshow
-        setShowTypewriter(false);
-        setShowSlideshow(true);
-        setShowSection4(false);
-        setShowSection5(false);
-      } else if (scrollY > windowHeight * 2.5 && scrollY < windowHeight * 3.5) {
-        // Section 4 - Circular Reveal
+        setMarqueeVisible(true); // Show marquee in section 2
+        setMarqueeOpacity(1); // Reset opacity to full
+      } else if (scrollY > windowHeight * 1.5 && scrollY < windowHeight * 3.0) {
+        // Section 3 - Zoom Parallax (reduced height for earlier problem screen)
         setShowTypewriter(false);
         setShowSlideshow(false);
-        setShowSection4(true);
+        setShowSection4(false);
         setShowSection5(false);
+        setShowProblemScreen(false);
+        // Gradual marquee fade during transition
+        if (scrollY < windowHeight * 2.0) {
+          setMarqueeVisible(true); // Keep marquee visible during overlap
+          // Calculate fade opacity based on scroll progress
+          const fadeStart = windowHeight * 1.5;
+          const fadeEnd = windowHeight * 2.0;
+          const fadeProgress = Math.max(0, Math.min(1, (scrollY - fadeStart) / (fadeEnd - fadeStart)));
+          setMarqueeOpacity(1 - fadeProgress); // Fade from 1 to 0
+        } else {
+          setMarqueeVisible(false); // Hide marquee after transition
+          setMarqueeOpacity(0);
+        }
+      } else if (scrollY > windowHeight * 3.0 && scrollY < windowHeight * 5.5) {
+        // Problem Screen - Extended area, stays visible longer
+        setShowTypewriter(false);
+        setShowSlideshow(false);
+        setShowSection4(false);
+        setShowSection5(false);
+        setShowProblemScreen(true);
+        setMarqueeVisible(false); // Hide marquee
+      } else if (scrollY > windowHeight * 5.5 && scrollY < windowHeight * 7.0) {
+        // Section 4 - Circular Reveal (Extended area for better reading time)
+        // Only transition if scroll resistance is not active
+        if (!problemScreenScrollResistance && !circularRevealScrollResistance) {
+          setShowTypewriter(false);
+          setShowSlideshow(false);
+          setShowSection4(true);
+          setShowSection5(false);
+          setShowProblemScreen(false);
+          setMarqueeVisible(false); // Hide marquee
+        }
       } else {
         // Section 5 - CTA
-        setShowTypewriter(false);
-        setShowSlideshow(false);
-        setShowSection4(false);
-        setShowSection5(true);
+        // Only transition if scroll resistance is not active
+        if (!problemScreenScrollResistance && !circularRevealScrollResistance) {
+          setShowTypewriter(false);
+          setShowSlideshow(false);
+          setShowSection4(false);
+          setShowSection5(true);
+          setShowProblemScreen(false);
+          setMarqueeVisible(false); // Hide marquee
+        }
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [showProblemScreen, problemScreenScrollResistance, showSection4, circularRevealScrollResistance]);
+
 
   // Typewriter effect - now with stable dependency array
   useEffect(() => {
@@ -137,8 +367,19 @@ export default function Home() {
         <ShaderAnimation />
       </div>
       
-      {/* Typewriter Text - Top Center */}
-      <div className={`relative z-10 flex items-center justify-center min-h-screen transition-all duration-1000 ease-in-out ${showTypewriter ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+      {/* Center-out Black Cover - Only visible during transition */}
+      <div 
+        className={`fixed inset-0 bg-black pointer-events-none z-10 transition-opacity duration-500 ${
+          locking || played ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          clipPath: `inset(var(--gap, 40vh) 0 var(--gap, 40vh) 0)`,
+          transition: 'clip-path 1.2s ease-out'
+        }}
+      />
+      
+      {/* Section 1 - Typewriter Text */}
+      <section id="section-1" className={`relative z-10 flex items-center justify-center min-h-screen transition-all duration-1000 ease-in-out ${showTypewriter ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
         <div className="text-center">
           <div className="text-4xl sm:text-5xl lg:text-6xl font-medium text-white font-clash leading-relaxed tracking-wide">
             <span className="inline-block min-h-[1.2em] drop-shadow-md">
@@ -147,141 +388,94 @@ export default function Home() {
             </span>
           </div>
         </div>
-      </div>
+      </section>
 
       
       {/* Section 2 - OPEF Section */}
-      <div className={`relative z-10 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${!showTypewriter && !showSlideshow ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
-        <div className="text-center">
-          <h1 className="text-6xl sm:text-8xl lg:text-9xl font-extrabold text-white font-clash leading-none tracking-[0.2em] drop-shadow-2xl transform scale-x-300">
-            OPEF
-          </h1>
-        </div>
-      </div>
-
-      {/* Section 3 - Animated Slideshow */}
-      <div className={`relative z-10 min-h-screen flex items-start justify-between px-8 sm:px-12 lg:px-16 transition-all duration-1000 ease-in-out ${showSlideshow ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
-        <HoverSlider className="w-full">
-          <div className="flex items-start justify-between w-full h-screen">
-            <div className="flex-1 max-w-3xl pr-4 flex flex-col h-full">
-              <div className="flex flex-col space-y-8 md:space-y-10 lg:space-y-12 overflow-y-auto flex-1 pr-2 pt-16">
-                <TextStaggerHover
-                  index={0}
-                  className="cursor-pointer text-xl md:text-2xl lg:text-3xl font-semibold uppercase tracking-[0.15em] text-white !text-white font-clash leading-[1.2]"
-                  style={{ color: 'white' }}
-                  text="$100B Buried in Bureaucracy."
-                />
-                <TextStaggerHover
-                  index={1}
-                  className="cursor-pointer text-xl md:text-2xl lg:text-3xl font-semibold uppercase tracking-[0.15em] text-white !text-white font-clash leading-[1.2]"
-                  style={{ color: 'white' }}
-                  text="Agencies Stuck Without AI."
-                />
-                <TextStaggerHover
-                  index={2}
-                  className="cursor-pointer text-xl md:text-2xl lg:text-3xl font-semibold uppercase tracking-[0.15em] text-white !text-white font-clash leading-[1.2]"
-                  style={{ color: 'white' }}
-                  text="Budgets Slashed. Mandates Rising. Automation Can't Wait."
-                />
-                <TextStaggerHover
-                  index={3}
-                  className="cursor-pointer text-xl md:text-2xl lg:text-3xl font-semibold uppercase tracking-[0.15em] text-white !text-white font-clash leading-[1.2]"
-                  style={{ color: 'white' }}
-                  text="OPEF: Faster. Cheaper. Defensible."
-                />
-              </div>
-            </div>
-            
-            {/* Static Infographic - Right Side */}
-            <div className="flex-1 max-w-md ml-6 lg:ml-8 flex-shrink-0">
-              <div className="w-full h-full bg-gradient-to-br from-gray-900/95 to-gray-800/90 backdrop-blur-sm rounded-2xl p-6 flex flex-col justify-between relative shadow-2xl border border-gray-700/30">
-                {/* Vertical Accent Line */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-white to-white/70 rounded-l-2xl"></div>
-                
-                <div className="text-white font-clash space-y-6 pl-4 pt-16">
-                  {/* Top Header - Magazine Cover Line */}
-                  <div className="text-center space-y-3">
-                    <div className="text-sm font-semibold text-white font-clash tracking-normal leading-tight">
-                      Billions Buried in Bureaucracy.<br/>
-                      OPEF Brings it Back.
-                    </div>
-                    <div className="w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                  </div>
-
-                  {/* Block 1 - The Market */}
-                  <div className="space-y-3">
-                    <div className="text-3xl font-bold text-white font-clash leading-none">
-                      $100B
-                    </div>
-                    <div className="text-xs font-medium text-white font-clash tracking-normal">
-                      Annual government consulting spend
-                    </div>
-                    <div className="text-xs text-white/80 font-clash leading-relaxed">
-                      → Consultants dominate repetitive compliance work.<br/>
-                      → $2B+ addressable market in environmental compliance alone.
-                    </div>
-                    <div className="w-full h-px bg-white/20"></div>
-                  </div>
-
-                  {/* Block 2 - The Mandate */}
-                  <div className="space-y-3">
-                    <div className="text-2xl font-bold text-white font-clash leading-none">
-                      UNDER 1 YEAR
-                    </div>
-                    <div className="text-xs font-medium text-white font-clash tracking-normal">
-                      EAs must be completed in less than a year
-                    </div>
-                    <div className="text-xs text-white/80 font-clash leading-relaxed">
-                      → Agencies now face strict deadlines.<br/>
-                      → LLMs uniquely suited for drafting, alignment, precedent analysis.<br/>
-                      → Current software doesn&apos;t serve this need.
-                    </div>
-                    <div className="w-full h-px bg-white/20"></div>
-                  </div>
-
-                  {/* Block 3 - The Crisis */}
-                  <div className="space-y-3">
-                    <div className="text-2xl font-bold text-white font-clash leading-none">
-                      54% CUT
-                    </div>
-                    <div className="text-xs font-medium text-white font-clash tracking-normal">
-                      EPA budget since 2000
-                    </div>
-                    <div className="text-xs text-white/80 font-clash leading-relaxed">
-                      → Workforce down 23%.<br/>
-                      → Federal AI mandate pushes agencies to automate.<br/>
-                      → Pressure to do more with less.
-                    </div>
-                    <div className="w-full h-px bg-white/20"></div>
-                  </div>
-
-                  {/* Block 4 - The Solution */}
-                  <div className="space-y-3">
-                    <div className="text-xl font-bold text-white font-clash leading-none">
-                      FASTER. CHEAPER. DEFENSIBLE.
-                    </div>
-                    <div className="text-xs text-white/80 font-clash leading-relaxed">
-                      → OPEF automates analysis, reporting, and citations.<br/>
-                      → Cuts timelines from years to days.<br/>
-                      → Outputs regulator-ready and litigation-proof.
-                    </div>
-                  </div>
-
-                  {/* Pull Quote Overlay */}
-                  <div className="text-center pt-4">
-                    <div className="text-sm font-medium text-white font-clash italic leading-[1.6] border-t border-white/30 pt-4">
-                      &ldquo;From documents to defensible outcomes.&rdquo;
-                    </div>
-                  </div>
+      <section id="section-2" className="relative min-h-screen">
+        {/* Marquee + OPEF centered - Only visible in Section 2 */}
+        <div 
+          ref={marqueeRef} 
+          className={`fixed inset-x-0 top-1/2 -translate-y-1/2 z-30 transition-opacity duration-300 ease-in-out ${
+            marqueeVisible && !showTypewriter && !showSlideshow ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ opacity: marqueeVisible && !showTypewriter && !showSlideshow ? marqueeOpacity : 0 }}
+        >
+          <div className="w-full px-0">
+            <div className="bg-black text-white rounded-none py-6 w-full">
+              {/* OPEF Text */}
+              <h1 className="text-6xl sm:text-8xl lg:text-9xl font-extrabold text-white font-clash leading-none tracking-[0.2em] drop-shadow-2xl transform scale-x-300 text-center">
+                <span className="inline-block opacity-0 animate-[reveal_0.8s_ease-out_0.2s_forwards]">O</span>
+                <span className="inline-block opacity-0 animate-[reveal_0.8s_ease-out_0.4s_forwards]">P</span>
+                <span className="inline-block opacity-0 animate-[reveal_0.8s_ease-out_0.6s_forwards]">E</span>
+                <span className="inline-block opacity-0 animate-[reveal_0.8s_ease-out_0.8s_forwards]">F</span>
+              </h1>
+              
+              {/* Expanded Text - Hidden initially with marquee effect */}
+              <div className="mt-4 opacity-0 animate-[expand_1.2s_ease-out_2.0s_forwards] overflow-hidden">
+                <div className="animate-[marquee_30s_linear_infinite] whitespace-nowrap">
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-medium text-white font-clash leading-tight tracking-[0.15em] drop-shadow-lg transform scale-x-140 inline-block">
+                    Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • Open Platform for Environmental Frameworks • 
+                  </h2>
                 </div>
               </div>
             </div>
           </div>
-        </HoverSlider>
+        </div>
+      </section>
+
+      {/* Section 3 - Zoom Parallax */}
+      <section id="section-3" className="relative z-20">
+        <ZoomParallax 
+          images={[
+            {
+              src: "",
+              alt: "Problem statement",
+              text: "THE PROBLEM"
+            },
+            {
+              src: "",
+              alt: "Problem statement",
+              text: "THE PROBLEM"
+            },
+            {
+              src: "",
+              alt: "Problem statement",
+              text: "THE PROBLEM"
+            },
+            {
+              src: "",
+              alt: "Empty center space",
+              isCenter: true
+            },
+            {
+              src: "",
+              alt: "Problem statement",
+              text: "THE PROBLEM"
+            },
+            {
+              src: "",
+              alt: "Problem statement",
+              text: "THE PROBLEM"
+            },
+            {
+              src: "",
+              alt: "Problem statement",
+              text: "THE PROBLEM"
+            }
+          ]}
+        />
+      </section>
+
+      {/* Problem Screen - Between Parallax and Solution */}
+      <div className={`relative z-20 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${showProblemScreen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+        <ProblemScreen />
       </div>
 
       {/* Section 4 - Circular Reveal Heading */}
-      <div className={`relative z-10 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${showSection4 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+      <div id="section-4" className={`relative z-50 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${showSection4 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+        {/* Background overlay to ensure visibility */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 backdrop-blur-sm"></div>
         <div className="relative w-full h-screen flex items-center justify-center">
           {/* Circular Reveal Component - Dead Center Initially */}
           <div className={`absolute transition-all duration-1000 ease-in-out ${circularRevealMoved ? 'left-1/4 transform -translate-x-1/2' : 'left-1/2 transform -translate-x-1/2'}`}>
@@ -359,8 +553,15 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Features Section - Horizontal Scroll Carousel */}
+      <div className="relative z-20">
+        <HorizontalScrollCarousel />
+      </div>
+
       {/* Section 5 - CTA */}
-      <div className={`relative z-10 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${showSection5 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+      <div className={`relative z-20 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${showSection5 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+        {/* Background overlay to ensure visibility */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 backdrop-blur-sm"></div>
         <div className="text-center space-y-8 flex flex-col items-center">
           {/* Headline */}
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white font-clash leading-tight tracking-normal drop-shadow-lg">

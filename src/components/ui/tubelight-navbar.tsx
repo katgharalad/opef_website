@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { LucideIcon, Home as HomeIcon, Target, BarChart3, Circle, MessageSquare } from "lucide-react"
+import { LucideIcon, Home as HomeIcon, Target, AlertTriangle, Circle, Zap, MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
@@ -19,15 +19,52 @@ export function NavBar({ className }: NavBarProps) {
   const items: NavItem[] = [
     { name: "Home", section: 1, icon: HomeIcon },
     { name: "OPEF", section: 2, icon: Target },
-    { name: "Crisis", section: 3, icon: BarChart3 },
+    { name: "Problem", section: 3, icon: AlertTriangle },
     { name: "Solution", section: 4, icon: Circle },
-    { name: "Contact", section: 5, icon: MessageSquare },
+    { name: "Features", section: 5, icon: Zap },
+    { name: "Contact", section: 6, icon: MessageSquare },
   ]
   const [activeTab, setActiveTab] = useState(items[0].name)
 
+  // Update active tab based on scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      const windowHeight = window.innerHeight
+      
+      if (scrollY < windowHeight * 0.5) {
+        setActiveTab("Home")
+      } else if (scrollY < windowHeight * 3.0) {
+        setActiveTab("OPEF")
+      } else if (scrollY < windowHeight * 5.5) {
+        setActiveTab("Problem")
+      } else if (scrollY < windowHeight * 6.5) {
+        setActiveTab("Solution")
+      } else if (scrollY < windowHeight * 7.5) {
+        setActiveTab("Features")
+      } else {
+        setActiveTab("Contact")
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const scrollToSection = (sectionNumber: number) => {
     const windowHeight = window.innerHeight
-    const targetScroll = (sectionNumber - 1) * windowHeight
+    let targetScroll = 0
+    
+    switch(sectionNumber) {
+      case 1: targetScroll = 0; break
+      case 2: targetScroll = windowHeight * 0.5; break
+      case 3: targetScroll = windowHeight * 3.0; break // Problem section
+      case 4: targetScroll = windowHeight * 5.5; break // Solution section (Circular Reveal)
+      case 5: targetScroll = windowHeight * 6.5; break // Features section (Horizontal Carousel)
+      case 6: targetScroll = windowHeight * 7.5; break // Contact section (CTA)
+      default: targetScroll = (sectionNumber - 1) * windowHeight
+    }
+    
     window.scrollTo({
       top: targetScroll,
       behavior: 'smooth'
