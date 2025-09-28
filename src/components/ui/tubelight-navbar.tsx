@@ -34,13 +34,13 @@ export function NavBar({ className }: NavBarProps) {
       
       if (scrollY < windowHeight * 0.5) {
         setActiveTab("Home")
-      } else if (scrollY < windowHeight * 3.0) {
+      } else if (scrollY < windowHeight * 1.5) {
         setActiveTab("OPEF")
-      } else if (scrollY < windowHeight * 5.5) {
+      } else if (scrollY < windowHeight * 3.0) {
         setActiveTab("Problem")
-      } else if (scrollY < windowHeight * 6.5) {
+      } else if (scrollY < windowHeight * 4.0) {
         setActiveTab("Solution")
-      } else if (scrollY < windowHeight * 7.5) {
+      } else if (scrollY < windowHeight * 5.0) {
         setActiveTab("Features")
       } else {
         setActiveTab("Contact")
@@ -56,12 +56,12 @@ export function NavBar({ className }: NavBarProps) {
     let targetScroll = 0
     
     switch(sectionNumber) {
-      case 1: targetScroll = 0; break
-      case 2: targetScroll = windowHeight * 0.5; break
-      case 3: targetScroll = windowHeight * 3.0; break // Problem section
-      case 4: targetScroll = windowHeight * 5.5; break // Solution section (Circular Reveal)
-      case 5: targetScroll = windowHeight * 6.5; break // Features section (Horizontal Carousel)
-      case 6: targetScroll = windowHeight * 7.5; break // Contact section (CTA)
+      case 1: targetScroll = 0; break // Home - Typewriter
+      case 2: targetScroll = windowHeight * 1.0; break // OPEF - Logo/Brand
+      case 3: targetScroll = windowHeight * 2.2; break // Problem - End of parallax where "THE PROBLEM" appears
+      case 4: targetScroll = windowHeight * 3.5; break // Solution - Circular component
+      case 5: targetScroll = windowHeight * 4.5; break // Features - Horizontal scroll start
+      case 6: targetScroll = windowHeight * 5.5; break // Contact - CTA section
       default: targetScroll = (sectionNumber - 1) * windowHeight
     }
     

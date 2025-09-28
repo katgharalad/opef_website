@@ -1,5 +1,74 @@
 import { motion, useTransform, useScroll } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import { CheckCircle2 } from "lucide-react";
+
+// Text component for the new message
+const PlatformMessage = () => {
+  const [typewriterText, setTypewriterText] = useState("");
+  const [isVisible, setIsVisible] = useState(true);
+  const currentIndexRef = useRef(0);
+  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+  const isVisibleRef = useRef(true);
+
+  const fullText = "One platform. Every step. Zero wasted motion.";
+
+  useEffect(() => {
+    isVisibleRef.current = isVisible;
+  }, [isVisible]);
+
+  useEffect(() => {
+    const typeText = () => {
+      if (!isVisibleRef.current) {
+        if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+        setTypewriterText("");
+        currentIndexRef.current = 0;
+        return;
+      }
+      
+      if (currentIndexRef.current <= fullText.length) {
+        setTypewriterText(fullText.slice(0, currentIndexRef.current));
+        currentIndexRef.current++;
+        timeoutIdRef.current = setTimeout(typeText, 60);
+      } else {
+        // Wait 3 seconds after typing is complete
+        timeoutIdRef.current = setTimeout(() => {
+          if (!isVisibleRef.current) {
+            if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+            setTypewriterText("");
+            currentIndexRef.current = 0;
+            return;
+          }
+          // Clear text quickly
+          setTypewriterText("");
+          currentIndexRef.current = 0;
+          // Wait 500ms before starting again
+          timeoutIdRef.current = setTimeout(typeText, 500);
+        }, 3000);
+      }
+    };
+
+    // Start typing immediately
+    const startTyping = setTimeout(() => {
+      if (isVisibleRef.current) {
+        typeText();
+      }
+    }, 500);
+    
+    return () => {
+      clearTimeout(startTyping);
+      if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+    };
+  }, [isVisible]);
+
+  return (
+    <div className="flex items-center justify-center min-h-[22rem] w-[28rem] pt-8">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-normal text-white font-clash leading-tight tracking-wide text-center whitespace-nowrap">
+        {typewriterText}
+        <span className="text-white/60 text-lg font-normal animate-pulse" style={{ fontWeight: '100', width: '0.1em' }}>|</span>
+      </h1>
+    </div>
+  );
+};
 
 export const HorizontalScrollCarousel = () => {
   const targetRef = useRef(null);
@@ -7,7 +76,7 @@ export const HorizontalScrollCarousel = () => {
     target: targetRef,
   });
 
-  const x = useTransform(scrollYProgress, [0, 1], ["1%", "-95%"]);
+  const x = useTransform(scrollYProgress, [0, 1], ["1%", "-70%"]);
 
   return (
     <section ref={targetRef} className="relative h-[300vh] bg-gradient-to-br from-black/80 via-black/60 to-black/80">
@@ -19,10 +88,14 @@ export const HorizontalScrollCarousel = () => {
       </div>
       
       <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-        <motion.div style={{ x }} className="flex gap-10">
+        <motion.div style={{ x }} className="flex gap-10 pt-30">
           {cards.map((card) => {
             return <Card card={card} key={card.id} />;
           })}
+          {/* Platform Message - positioned further right to eliminate overlap */}
+          <div className="ml-[20rem]">
+            <PlatformMessage />
+          </div>
         </motion.div>
       </div>
     </section>
@@ -50,7 +123,12 @@ const Card = ({ card }: { card: CardData }) => {
           repeating-linear-gradient(0deg, transparent 0px, transparent 22px, rgba(255,255,255,0.03) 22px, rgba(255,255,255,0.03) 24px),
           radial-gradient(400px 150px at 30% 25%, rgba(255,255,255,0.08), transparent),
           linear-gradient(135deg, #1A1A1A 0%, #1F1F1F 55%, #1A1A1A 100%)
-        `
+        `,
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
+        textRendering: 'optimizeLegibility',
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden'
       }}
     >
       <div className="relative z-10 flex flex-col h-full space-y-6">
@@ -63,12 +141,12 @@ const Card = ({ card }: { card: CardData }) => {
         </div>
 
         {/* Headline */}
-        <h3 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] leading-tight font-clash text-white">
+        <h3 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] leading-tight font-clash text-white" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
           {card.title}
         </h3>
 
         {/* One-line subhead */}
-        <p className="text-sm text-white/70 font-clash font-light leading-relaxed">
+        <p className="text-base text-white/70 font-clash font-light leading-relaxed" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
           {card.subline}
         </p>
 
@@ -76,17 +154,17 @@ const Card = ({ card }: { card: CardData }) => {
         <div className="space-y-3 flex-1">
           {card.bullets.map((bullet, index) => (
             <div key={index} className="flex items-start gap-3">
-              <div className="w-4 h-px bg-white/30 mt-2 flex-shrink-0"></div>
-              <p className="text-sm leading-relaxed text-white/75 font-clash font-light">{bullet}</p>
+              <CheckCircle2 className="w-4 h-4 text-white/15 mt-1 flex-shrink-0" />
+              <p className="text-base leading-relaxed text-white/75 font-clash font-light" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>{bullet}</p>
             </div>
           ))}
         </div>
 
         {/* Divider line */}
-        <div className="w-full h-px bg-white/8" />
+        <div className="w-full h-px bg-white/4" />
 
         {/* Proof / stat line */}
-        <div className="text-xs text-white/50 font-clash font-light">
+        <div className="text-sm text-white/50 font-clash font-light">
           {card.proof}
         </div>
 

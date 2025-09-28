@@ -1,6 +1,20 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Global text rendering optimization */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Additional optimization for transformed elements */
+[class*="hover:-translate"], [class*="transform"], [class*="motion"] {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 /* ClashDisplay Font Faces */
 @font-face {
   font-family: 'ClashDisplay-Extralight';

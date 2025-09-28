@@ -2,17 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { CheckCircle2 } from 'lucide-react';
 
 export function ProblemScreen() {
   return (
     <section className="relative min-h-screen">
-      {/* Smooth black background fade-in */}
-      <motion.div 
-        className="absolute inset-0 bg-[#0A0A0B]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
-      />
       
       {/* THE PROBLEM text - follows marquee expansion from top */}
       <motion.div
@@ -76,185 +70,64 @@ export function ProblemScreen() {
           $100B to consultants. Reviews measured in years. Budgets slashed, staff reduced—yet expectations rise.
         </motion.p>
       </div>
+      </motion.div>
 
-      {/* Square layout card grid */}
+      {/* 4-card grid layout */}
       <motion.div 
         className="mx-auto max-w-7xl px-6 lg:px-10 mt-16 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-24"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.0, ease: "easeOut", delay: 1.6 }}
       >
-        {/* Top rectangle - spans full width */}
-        <div className="lg:col-span-2">
-          <motion.article
-            className={[
-              "relative overflow-hidden rounded-[18px] border border-white/8",
-              "bg-gradient-to-br from-[#1A1A1A] via-[#1F1F1F] to-[#1A1A1A]",
-              "p-8 lg:p-10 transition-all duration-300",
-              "shadow-[0_8px_24px_rgba(0,0,0,0.25)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.35)]",
-              "hover:border-white/15 hover:-translate-y-1"
-            ].join(" ")}
-            style={{
-              background: `
-                linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.02) 50%, transparent 100%),
-                repeating-linear-gradient(0deg, transparent 0px, transparent 22px, rgba(255,255,255,0.03) 22px, rgba(255,255,255,0.03) 24px),
-                radial-gradient(400px 150px at 30% 25%, rgba(255,255,255,0.08), transparent),
-                linear-gradient(135deg, #1A1A1A 0%, #1F1F1F 55%, #1A1A1A 100%)
-              `
-            }}
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="relative z-10 flex flex-col lg:flex-row h-full space-y-6 lg:space-y-0 lg:space-x-8">
-              {/* Left content */}
-              <div className="flex-1 flex flex-col space-y-6">
-                {/* Micro-label */}
-                <div className="text-[9px] tracking-[0.2em] text-white/45 font-clash font-medium uppercase">
-                  PROBLEM
-                </div>
-                
-                {/* Headline */}
-                <h3 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] leading-tight font-clash text-white">
-                  Consulting Is the Product
-                </h3>
-                
-                {/* One-line subhead */}
-                <p className="text-sm text-white/70 font-clash font-light leading-relaxed">
-                  Clear benefit statement or punchline.
-                </p>
-                
-                {/* Body / bullets */}
-                <div className="space-y-3 flex-1">
-                  <div className="flex items-start gap-3">
-                    <div className="w-4 h-px bg-white/30 mt-2 flex-shrink-0"></div>
-                    <p className="text-sm leading-relaxed text-white/75 font-clash font-light">
-                      Billions go to repetitive drafting, comment collation, and precedent hunting.
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-4 h-px bg-white/30 mt-2 flex-shrink-0"></div>
-                    <p className="text-sm leading-relaxed text-white/75 font-clash font-light">
-                      The process is predictable—just not automated.
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Divider line */}
-                <div className="w-full h-px bg-white/8" />
-                
-                {/* Proof / stat line */}
-                <div className="text-xs text-white/50 font-clash font-light">
-                  $100B+ annual gov consulting; largest share is document workflows.
-                </div>
-                
-                {/* Micro-CTA */}
-                <motion.a
-                  href="#"
-                  className="text-xs text-white/60 font-clash font-medium underline underline-offset-2 self-start hover:text-white/80 transition-colors duration-200"
-                  whileHover={{ x: 2 }}
-                >
-                  Learn more →
-                </motion.a>
-              </div>
-
-              {/* Watermark stats - behind content */}
-              <div className="absolute inset-0 pointer-events-none">
-                <CyclingStats />
-              </div>
-            </div>
-          </motion.article>
-        </div>
-
-        {/* Bottom left square */}
+        {/* Card 1 - Consulting Is the Product */}
+        <ProblemCard
+          title="Consulting Is the Product"
+          body={[
+            "$100B+ annual U.S. government consulting spend",
+            "Majority tied to document-heavy workflows",
+            "Billions wasted on drafting, collation, precedent hunting",
+            "The process is predictable — just not automated"
+          ]}
+          proof="Consulting Firms Sell Repetition. We Sell Automation."
+        />
+        
+        {/* Card 2 - Capacity Collapse */}
         <ProblemCard
           title="Less Money. Fewer People. Same Deadlines."
           body={[
-            "–54% budget / –23% staff; scrutiny up, capacity down.",
-            "Manual reviews cannot scale under current constraints."
+            "–54% EPA budget cut",
+            "–23% EPA staff reduction", 
+            "Enforcement: –30% civil, –49% criminal, –35% monitoring",
+            "States + tribes inherit backlog as EPA capacity collapses"
           ]}
-          proof="EPA cuts collapse in-house capacity; states & tribes inherit the backlog."
+          proof="Capacity collapse creates systemic delays across environmental review."
         />
-
-        {/* Bottom right square */}
+        
+        {/* Card 3 - Structural Delay */}
         <ProblemCard
-          title="Automate or Accumulate Delay"
+          title="Automate or Accumulate Delay."
           body={[
-            "AI with audit trails delivers faster, cheaper, defensible outputs.",
-            "Agencies keep control with human-in-the-loop review."
+            "6–12 months for Environmental Assessments",
+            "4+ years for Environmental Impact Statements",
+            "Manual reviews cannot scale under current constraints"
           ]}
-          proof="LLM workflows cut weeks to minutes for high-volume tasks."
+          proof="Structural delays compound across the entire regulatory pipeline."
         />
-      </motion.div>
+        
+        {/* Card 4 - Solution */}
+        <ProblemCard
+          title="AI With Audit Trails = Faster, Cheaper, Defensible."
+          body={[
+            "Modular, LLM-powered platform for document generation, precedent search, and comment response",
+            "Transparent outputs + human-in-the-loop review",
+            "Direct alignment with OMB AI mandate (M-25-21)"
+          ]}
+          proof="Automation advantage delivers compliance that meets federal mandates."
+        />
       </motion.div>
     </section>
   );
 }
-
-const CyclingStats = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  
-  const stats = [
-    {
-      number: "$100B",
-      label: "ANNUAL CONSULTING SPEND"
-    },
-    {
-      number: "54%",
-      label: "BUDGET REDUCTION"
-    },
-    {
-      number: "23%",
-      label: "STAFF REDUCTION"
-    }
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % stats.length);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [stats.length]);
-
-  return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <motion.div
-        key={currentIndex}
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -30, scale: 1.05 }}
-        transition={{ 
-          duration: 0.8, 
-          ease: [0.25, 0.46, 0.45, 0.94] // Custom easing curve for flipbook feel
-        }}
-        className="absolute inset-0 flex flex-col items-center justify-center"
-      >
-        {/* Watermark stat - oversized design object */}
-        <div 
-          className="text-[200px] md:text-[240px] font-bold text-white font-clash leading-none"
-          style={{
-            background: 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.1) 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            letterSpacing: '-0.02em', // Tighter kerning for fashion mag energy
-            opacity: 0.12
-          }}
-        >
-          {stats[currentIndex].number}
-        </div>
-        
-        {/* Editorial label - positioned above */}
-        <div 
-          className="absolute top-8 text-sm font-light text-white/40 font-clash uppercase tracking-[0.3em]"
-          style={{ letterSpacing: '0.3em' }}
-        >
-          {stats[currentIndex].label}
-        </div>
-      </motion.div>
-    </div>
-  );
-};
 
 function ProblemCard({
   title, body, proof, className = ""
@@ -275,7 +148,12 @@ function ProblemCard({
           repeating-linear-gradient(0deg, transparent 0px, transparent 22px, rgba(255,255,255,0.03) 22px, rgba(255,255,255,0.03) 24px),
           radial-gradient(400px 150px at 30% 25%, rgba(255,255,255,0.08), transparent),
           linear-gradient(135deg, #1A1A1A 0%, #1F1F1F 55%, #1A1A1A 100%)
-        `
+        `,
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
+        textRendering: 'optimizeLegibility',
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden'
       }}
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
@@ -287,12 +165,12 @@ function ProblemCard({
         </div>
         
         {/* Headline */}
-        <h3 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] leading-tight font-clash text-white">
+        <h3 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] leading-tight font-clash text-white" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
           {title}
         </h3>
         
         {/* One-line subhead */}
-        <p className="text-sm text-white/70 font-clash font-light leading-relaxed">
+        <p className="text-base text-white/70 font-clash font-light leading-relaxed" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
           Clear benefit statement or punchline.
         </p>
         
@@ -300,17 +178,17 @@ function ProblemCard({
         <div className="space-y-3 flex-1">
           {body.map((b, i) => (
             <div key={i} className="flex items-start gap-3">
-              <div className="w-4 h-px bg-white/30 mt-2 flex-shrink-0"></div>
-              <p className="text-sm leading-relaxed text-white/75 font-clash font-light">{b}</p>
+              <CheckCircle2 className="w-4 h-4 text-white/15 mt-1 flex-shrink-0" />
+              <p className="text-base leading-relaxed text-white/75 font-clash font-light" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>{b}</p>
             </div>
           ))}
         </div>
         
         {/* Divider line */}
-        <div className="w-full h-px bg-white/8" />
+        <div className="w-full h-px bg-white/4" />
         
         {/* Proof / stat line */}
-        <div className="text-xs text-white/50 font-clash font-light">
+        <div className="text-sm text-white/50 font-clash font-light">
           {proof}
         </div>
         

@@ -10,6 +10,7 @@ import { ProblemStatement } from "@/components/ProblemStatement";
 import { ProblemScreen } from "@/components/ProblemScreen";
 import { useState, useEffect, useRef } from "react";
 import { HorizontalScrollCarousel } from "@/components/ui/horizontal-scroll-carousel";
+import Image from "next/image";
 
 export default function Home() {
   const [typewriterText, setTypewriterText] = useState("");
@@ -316,9 +317,9 @@ export default function Home() {
       if (currentIndexRef.current <= fullText.length) {
         setTypewriterText(fullText.slice(0, currentIndexRef.current));
         currentIndexRef.current++;
-        timeoutIdRef.current = setTimeout(typeText, 100); // Typing speed
+        timeoutIdRef.current = setTimeout(typeText, 50); // Much faster typing speed
       } else {
-        // Wait 3 seconds after typing is complete
+        // Wait 1 second after typing is complete
         timeoutIdRef.current = setTimeout(() => {
           if (!showTypewriterRef.current) {
             if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
@@ -329,9 +330,9 @@ export default function Home() {
           // Clear text quickly
           setTypewriterText("");
           currentIndexRef.current = 0;
-          // Wait only 200ms before starting again
-          timeoutIdRef.current = setTimeout(typeText, 200);
-        }, 3000);
+          // Wait only 100ms before starting again
+          timeoutIdRef.current = setTimeout(typeText, 100);
+        }, 1000);
       }
     };
 
@@ -340,7 +341,7 @@ export default function Home() {
       if (showTypewriterRef.current) {
         typeText();
       }
-    }, 2000);
+    }, 1000);
     
     return () => {
       clearTimeout(startTyping);
@@ -483,33 +484,27 @@ export default function Home() {
               size="lg"
               items={[
                 {
-                  text: "COMPLIANCE",
-                  image: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500&h=500&fit=crop&crop=center"
+                  text: "COMPLIANCE"
                 },
                 {
-                  text: "ANALYSIS",
-                  image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&h=500&fit=crop&crop=center"
+                  text: "ANALYSIS"
                 },
                 {
-                  text: "ENVIRONMENTAL",
-                  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=500&fit=crop&crop=center"
+                  text: "ENVIRONMENTAL"
                 },
                 {
-                  text: "REVIEW",
-                  image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=500&h=500&fit=crop&crop=center"
+                  text: "REVIEW"
                 },
                 {
-                  text: "REGULATORY",
-                  image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=500&h=500&fit=crop&crop=center"
+                  text: "REGULATORY"
                 },
                 {
-                  text: "GUIDANCE",
-                  image: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=500&h=500&fit=crop&crop=center"
+                  text: "GUIDANCE"
                 }
               ]}
               centerText={
                 <div className="text-center">
-                  <h2 className="text-3xl font-bold text-gray-700 mb-3 font-clash">THE SOLUTION</h2>
+                  <h2 className="text-3xl font-bold text-gray-700 mb-3 font-clash">The Solution</h2>
                   <p className="text-sm text-gray-600 font-clash leading-relaxed">Open Platform for Environmental Frameworks</p>
                 </div>
               }
@@ -562,10 +557,28 @@ export default function Home() {
       <div className={`relative z-20 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${showSection5 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
         {/* Background overlay to ensure visibility */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 backdrop-blur-sm"></div>
-        <div className="text-center space-y-8 flex flex-col items-center">
+        
+        {/* Logo Watermark */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <Image
+            src="/opef-logo-final.png"
+            alt="OPEF Logo"
+            width={1500}
+            height={1500}
+            className="opacity-15 object-contain"
+            style={{
+              imageRendering: 'auto',
+              filter: 'blur(0.5px)',
+              transform: 'scale(1.02)'
+            }}
+            priority
+          />
+        </div>
+        
+        <div className="text-center space-y-8 flex flex-col items-center relative z-10 pt-32">
           {/* Headline */}
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white font-clash leading-tight tracking-normal drop-shadow-lg">
-            Let&apos;s Fix Compliance Together.
+          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-medium text-white font-clash leading-tight tracking-wide drop-shadow-lg">
+            Don&apos;t Adapt. Define.
           </h2>
           
           {/* Subtext */}

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 
 interface TextItem {
     text: string;
-    image: string;
+    image?: string;
 }
 
 interface CircularRevealHeadingProps {
@@ -108,7 +108,7 @@ export const CircularRevealHeading = ({
 }: CircularRevealHeadingProps) => {
     const [activeImage, setActiveImage] = useState<string | null>(null);
     const config = sizeConfig[size];
-    const imagesLoaded = usePreloadImages(items.map(item => item.image));
+    const imagesLoaded = usePreloadImages(items.map(item => item.image).filter(Boolean) as string[]);
 
     const createTextSegments = () => {
         const totalItems = items.length;
@@ -127,7 +127,7 @@ export const CircularRevealHeading = ({
                             config.textStyle,
                             "uppercase cursor-pointer transition-all duration-300"
                         )}
-                        onMouseEnter={() => imagesLoaded && setActiveImage(item.image)}
+                        onMouseEnter={() => item.image && imagesLoaded && setActiveImage(item.image)}
                         onMouseLeave={() => setActiveImage(null)}
                         style={{
                             filter: 'url(#textShadow)',
@@ -151,7 +151,7 @@ export const CircularRevealHeading = ({
 
     return (
         <>
-            <ImagePreloader images={items.map(item => item.image)} />
+            <ImagePreloader images={items.map(item => item.image).filter(Boolean) as string[]} />
             <motion.div
                 whileHover={{
                     boxShadow: "20px 20px 40px #bebebe, -20px -20px 40px #ffffff"
