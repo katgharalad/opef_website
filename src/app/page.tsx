@@ -271,28 +271,22 @@ export default function Home() {
         setShowSection5(false);
         setShowProblemScreen(true);
         setMarqueeVisible(false); // Hide marquee
-      } else if (scrollY > windowHeight * 5.5 && scrollY < windowHeight * 7.0) {
-        // Section 4 - Circular Reveal (Extended area for better reading time)
-        // Only transition if scroll resistance is not active
-        if (!problemScreenScrollResistance && !circularRevealScrollResistance) {
-          setShowTypewriter(false);
-          setShowSlideshow(false);
-          setShowSection4(true);
-          setShowSection5(false);
-          setShowProblemScreen(false);
-          setMarqueeVisible(false); // Hide marquee
-        }
-      } else {
-        // Section 5 - CTA
-        // Only transition if scroll resistance is not active
-        if (!problemScreenScrollResistance && !circularRevealScrollResistance) {
-          setShowTypewriter(false);
-          setShowSlideshow(false);
-          setShowSection4(false);
-          setShowSection5(true);
-          setShowProblemScreen(false);
-          setMarqueeVisible(false); // Hide marquee
-        }
+      } else if (scrollY > windowHeight * 5.0 && scrollY < windowHeight * 6.0) {
+        // Section 4 - Circular Reveal (Immediate appearance when entering section)
+        setShowTypewriter(false);
+        setShowSlideshow(false);
+        setShowSection4(true);
+        setShowSection5(false);
+        setShowProblemScreen(false);
+        setMarqueeVisible(false); // Hide marquee
+      } else if (scrollY > windowHeight * 6.0) {
+        // Section 5 - CTA (Immediate appearance when entering section)
+        setShowTypewriter(false);
+        setShowSlideshow(false);
+        setShowSection4(false);
+        setShowSection5(true);
+        setShowProblemScreen(false);
+        setMarqueeVisible(false); // Hide marquee
       }
     };
 
@@ -356,20 +350,17 @@ export default function Home() {
     };
   }, [showTypewriter, fullText]); // Restart when showTypewriter changes
 
-  // Section 4 animation - move circular reveal left after 0.5 seconds
+  // Section 4 animation - move circular reveal left immediately
   useEffect(() => {
     if (showSection4) {
-      const timer = setTimeout(() => {
-        setCircularRevealMoved(true);
-      }, 500);
-      
-      return () => clearTimeout(timer);
+      setCircularRevealMoved(true);
     } else {
       setCircularRevealMoved(false);
     }
   }, [showSection4]);
   return (
     <div className="relative">
+      
       {/* Shader Animation Background - Full Page */}
       <div className="fixed inset-0 z-0">
         <ShaderAnimation />
@@ -481,12 +472,12 @@ export default function Home() {
       </div>
 
       {/* Section 4 - Circular Reveal Heading */}
-      <div id="section-4" className={`relative z-50 min-h-screen flex items-center justify-center transition-all duration-300 ease-in-out ${showSection4 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+      <div id="section-4" className={`relative z-50 min-h-screen flex items-center justify-center transition-all duration-0 ease-in-out ${showSection4 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
         {/* Background overlay to ensure visibility */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 backdrop-blur-sm"></div>
         <div className="relative w-full h-screen flex items-center justify-center">
           {/* Circular Reveal Component - Dead Center Initially */}
-          <div className={`absolute transition-all duration-1000 ease-in-out ${circularRevealMoved ? 'left-1/4 transform -translate-x-1/2' : 'left-1/2 transform -translate-x-1/2'}`}>
+          <div className={`absolute transition-all duration-0 ease-in-out ${circularRevealMoved ? 'left-1/4 transform -translate-x-1/2' : 'left-1/2 transform -translate-x-1/2'}`}>
             <CircularRevealHeading
               size="lg"
               items={[
@@ -519,7 +510,7 @@ export default function Home() {
           </div>
           
           {/* Solution Statement - Right Side */}
-          <div className={`absolute right-8 sm:right-12 lg:right-16 w-1/2 transition-all duration-1000 ease-in-out ${circularRevealMoved ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'}`}>
+          <div className={`absolute right-8 sm:right-12 lg:right-16 w-1/2 transition-all duration-0 ease-in-out ${circularRevealMoved ? 'opacity-100 transform translate-x-0' : 'opacity-0 transform translate-x-8'}`}>
             <div className="max-w-2xl space-y-8">
               {/* Solution 1 */}
               <div className="space-y-3">
@@ -561,7 +552,7 @@ export default function Home() {
       </div>
 
       {/* Section 6 - CTA */}
-      <div id="section-6" className={`relative z-20 min-h-screen flex items-center justify-center transition-all duration-[800ms] ease-out ${showSection5 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+      <div id="section-6" className={`relative z-20 min-h-screen flex items-center justify-center transition-all duration-0 ease-out ${showSection5 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
         {/* Background overlay to ensure visibility */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 backdrop-blur-sm"></div>
         
@@ -596,7 +587,7 @@ export default function Home() {
           {/* Contact Us Button - Perfectly Centered */}
           <div className="pt-4 flex justify-center">
             <Button 
-              onClick={() => window.open('https://docs.google.com/forms/d/1E09Q1MtvyZspaC1ZT68c5R7J5Pie3slqXzDH89fWp7s/viewform', '_blank', 'noopener,noreferrer')}
+              onClick={() => window.open('/temp', '_blank')}
             >
               Contact Us
             </Button>
