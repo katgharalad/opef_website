@@ -78,7 +78,7 @@ export default function ComplianceCritique() {
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-white border border-gray-200 overflow-hidden">
                 <Image 
-                  src="/logo.png" 
+                  src="/opef-logo-final.svg" 
                   alt="OPEF Logo" 
                   width={64} 
                   height={64}

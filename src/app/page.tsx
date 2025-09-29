@@ -2,11 +2,9 @@
 
 import { ShaderAnimation } from "@/components/ui/shader-animation";
 import { NavBar } from "@/components/ui/tubelight-navbar";
-import { HoverSlider, TextStaggerHover } from "@/components/ui/animated-slideshow";
 import { CircularRevealHeading } from "@/components/ui/circular-reveal-heading";
 import { Button } from "@/components/ui/rainbow-borders-button";
 import { ZoomParallax } from "@/components/ui/zoom-parallax";
-import { ProblemStatement } from "@/components/ProblemStatement";
 import { ProblemScreen } from "@/components/ProblemScreen";
 import { useState, useEffect, useRef } from "react";
 import { HorizontalScrollCarousel } from "@/components/ui/horizontal-scroll-carousel";
@@ -196,17 +194,17 @@ export default function Home() {
       
       // Scroll resistance logic for problem screen
       if (showProblemScreen && !problemScreenScrollResistance) {
-        const problemScreenStart = windowHeight * 3.0;
-        const problemScreenEnd = windowHeight * 5.5;
+        const problemScreenStart = windowHeight * 2.5;
+        const problemScreenEnd = windowHeight * 6.0;
         const scrollProgress = (scrollY - problemScreenStart) / (problemScreenEnd - problemScreenStart);
         
-        // Enable resistance when user starts scrolling past 20% of problem screen
-        if (scrollProgress > 0.2) {
+        // Enable resistance when user starts scrolling past 30% of problem screen
+        if (scrollProgress > 0.3) {
           setProblemScreenScrollResistance(true);
-          // Disable resistance after 2 seconds
+          // Disable resistance after 5 seconds (longer for reading bottom cards)
           setTimeout(() => {
             setProblemScreenScrollResistance(false);
-          }, 2000);
+          }, 5000);
         }
       }
 
@@ -300,11 +298,20 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [showProblemScreen, problemScreenScrollResistance, showSection4, circularRevealScrollResistance]);
+  }, [showProblemScreen, problemScreenScrollResistance, showSection4, circularRevealScrollResistance, playedReverse]);
 
 
-  // Typewriter effect - now with stable dependency array
+  // Typewriter effect - restart when showTypewriter changes
   useEffect(() => {
+    // Clear any existing timeouts
+    if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+    
+    // Reset typewriter state
+    setTypewriterText("");
+    currentIndexRef.current = 0;
+    
+    if (!showTypewriter) return;
+    
     const typeText = () => {
       // Check ref instead of state to avoid stale closures
       if (!showTypewriterRef.current) {
@@ -347,7 +354,7 @@ export default function Home() {
       clearTimeout(startTyping);
       if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
     };
-  }, []); // Empty dependency array - stable size
+  }, [showTypewriter, fullText]); // Restart when showTypewriter changes
 
   // Section 4 animation - move circular reveal left after 0.5 seconds
   useEffect(() => {
@@ -474,7 +481,7 @@ export default function Home() {
       </div>
 
       {/* Section 4 - Circular Reveal Heading */}
-      <div id="section-4" className={`relative z-50 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${showSection4 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+      <div id="section-4" className={`relative z-50 min-h-screen flex items-center justify-center transition-all duration-300 ease-in-out ${showSection4 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
         {/* Background overlay to ensure visibility */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 backdrop-blur-sm"></div>
         <div className="relative w-full h-screen flex items-center justify-center">
@@ -549,19 +556,19 @@ export default function Home() {
       </div>
 
       {/* Features Section - Horizontal Scroll Carousel */}
-      <div className="relative z-20">
+      <div id="section-5" className="relative z-20">
         <HorizontalScrollCarousel />
       </div>
 
-      {/* Section 5 - CTA */}
-      <div className={`relative z-20 min-h-screen flex items-center justify-center transition-all duration-1000 ease-in-out ${showSection5 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
+      {/* Section 6 - CTA */}
+      <div id="section-6" className={`relative z-20 min-h-screen flex items-center justify-center transition-all duration-[800ms] ease-out ${showSection5 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
         {/* Background overlay to ensure visibility */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/80 backdrop-blur-sm"></div>
         
         {/* Logo Watermark */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <Image
-            src="/opef-logo-final.png"
+            src="/opef-logo-final.svg"
             alt="OPEF Logo"
             width={1500}
             height={1500}
@@ -588,7 +595,9 @@ export default function Home() {
           
           {/* Contact Us Button - Perfectly Centered */}
           <div className="pt-4 flex justify-center">
-            <Button>
+            <Button 
+              onClick={() => window.open('https://docs.google.com/forms/d/1E09Q1MtvyZspaC1ZT68c5R7J5Pie3slqXzDH89fWp7s/viewform', '_blank', 'noopener,noreferrer')}
+            >
               Contact Us
             </Button>
           </div>

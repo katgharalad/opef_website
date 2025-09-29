@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { LucideIcon, Home as HomeIcon, Target, AlertTriangle, Circle, Zap, MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -16,59 +16,83 @@ interface NavBarProps {
 }
 
 export function NavBar({ className }: NavBarProps) {
-  const items: NavItem[] = [
+  const items: NavItem[] = React.useMemo(() => [
     { name: "Home", section: 1, icon: HomeIcon },
     { name: "OPEF", section: 2, icon: Target },
     { name: "Problem", section: 3, icon: AlertTriangle },
     { name: "Solution", section: 4, icon: Circle },
     { name: "Features", section: 5, icon: Zap },
     { name: "Contact", section: 6, icon: MessageSquare },
-  ]
+  ], [])
   const [activeTab, setActiveTab] = useState(items[0].name)
+  const sectionsRef = useRef<HTMLElement[]>([])
+  const targetsRef = useRef<number[]>([])
 
-  // Update active tab based on scroll position
+  // Build sections array and measure offsets
+  const updateSections = () => {
+    const sectionIds = ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6']
+    const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean) as HTMLElement[]
+    sectionsRef.current = sections
+    targetsRef.current = sections.map(el => el.offsetTop)
+  }
+
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY
-      const windowHeight = window.innerHeight
-      
-      if (scrollY < windowHeight * 0.5) {
-        setActiveTab("Home")
-      } else if (scrollY < windowHeight * 1.5) {
-        setActiveTab("OPEF")
-      } else if (scrollY < windowHeight * 3.0) {
-        setActiveTab("Problem")
-      } else if (scrollY < windowHeight * 4.0) {
-        setActiveTab("Solution")
-      } else if (scrollY < windowHeight * 5.0) {
-        setActiveTab("Features")
-      } else {
-        setActiveTab("Contact")
-      }
+    // Initial setup
+    updateSections()
+    
+    // Update on resize to handle dynamic content
+    const handleResize = () => {
+      updateSections()
     }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const scrollToSection = (sectionNumber: number) => {
-    const windowHeight = window.innerHeight
-    let targetScroll = 0
-    
-    switch(sectionNumber) {
-      case 1: targetScroll = 0; break // Home - Typewriter
-      case 2: targetScroll = windowHeight * 1.0; break // OPEF - Logo/Brand
-      case 3: targetScroll = windowHeight * 2.2; break // Problem - End of parallax where "THE PROBLEM" appears
-      case 4: targetScroll = windowHeight * 3.5; break // Solution - Circular component
-      case 5: targetScroll = windowHeight * 4.5; break // Features - Horizontal scroll start
-      case 6: targetScroll = windowHeight * 5.5; break // Contact - CTA section
-      default: targetScroll = (sectionNumber - 1) * windowHeight
+  // Use IntersectionObserver for accurate active section detection
+  useEffect(() => {
+    if (sectionsRef.current.length === 0) return
+
+    const opts = { 
+      root: null, 
+      rootMargin: '0px 0px -40% 0px', 
+      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     }
     
-    window.scrollTo({
-      top: targetScroll,
-      behavior: 'smooth'
-    })
+    const io = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+      
+      if (visible) {
+        const sectionId = visible.target.id
+        const sectionNumber = parseInt(sectionId.split('-')[1])
+        const item = items.find(item => item.section === sectionNumber)
+        if (item) setActiveTab(item.name)
+      }
+    }, opts)
+
+    sectionsRef.current.forEach(section => io.observe(section))
+    return () => io.disconnect()
+  }, [items])
+
+  const scrollToSection = (sectionNumber: number) => {
+    // Update sections before scrolling to ensure accurate positions
+    updateSections()
+    
+    const sectionIndex = sectionNumber - 1
+    const section = sectionsRef.current[sectionIndex]
+    
+    if (section) {
+      // For OPEF (section 2), center it in viewport since it's fixed positioned
+      if (sectionNumber === 2) {
+        const y = section.offsetTop + section.offsetHeight / 2 - window.innerHeight / 2
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' })
+      } else {
+        // For other sections, scroll to their top
+        window.scrollTo({ top: section.offsetTop, behavior: 'smooth' })
+      }
+    }
   }
 
   return (

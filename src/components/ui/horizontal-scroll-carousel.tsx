@@ -1,11 +1,41 @@
 import { motion, useTransform, useScroll } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { 
+  Search, 
+  Archive, 
+  Quote, 
+  TriangleAlert, 
+  Shield, 
+  Network, 
+  MapPin, 
+  CheckSquare, 
+  Table, 
+  Zap, 
+  FileText, 
+  Sparkles, 
+  Link, 
+  Users, 
+  Gauge, 
+  Inbox, 
+  Smile, 
+  Reply, 
+  UserCheck, 
+  Rocket, 
+  FolderOpen, 
+  Lock, 
+  ClipboardList, 
+  BarChart3, 
+  Award, 
+  Cloud, 
+  Globe, 
+  Shield as ShieldIcon, 
+  RefreshCw 
+} from "lucide-react";
 
 // Text component for the new message
 const PlatformMessage = () => {
   const [typewriterText, setTypewriterText] = useState("");
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible] = useState(true);
   const currentIndexRef = useRef(0);
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
   const isVisibleRef = useRef(true);
@@ -107,7 +137,7 @@ interface CardData {
   kicker: string;
   title: string;
   subline: string;
-  bullets: string[];
+  bullets: Array<{ text: string; icon: React.ComponentType<{ className?: string }> }>;
   proof: string;
   cta: string;
 }
@@ -152,12 +182,15 @@ const Card = ({ card }: { card: CardData }) => {
 
         {/* Body / bullets */}
         <div className="space-y-3 flex-1">
-          {card.bullets.map((bullet, index) => (
-            <div key={index} className="flex items-start gap-3">
-              <CheckCircle2 className="w-4 h-4 text-white/15 mt-1 flex-shrink-0" />
-              <p className="text-base leading-relaxed text-white/75 font-clash font-light" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>{bullet}</p>
-            </div>
-          ))}
+          {card.bullets.map((bullet, index) => {
+            const IconComponent = bullet.icon;
+            return (
+              <div key={index} className="flex items-start gap-3">
+                <IconComponent className="w-4 h-4 text-white/15 mt-1 flex-shrink-0" />
+                <p className="text-base leading-relaxed text-white/75 font-clash font-light" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>{bullet.text}</p>
+              </div>
+            );
+          })}
         </div>
 
         {/* Divider line */}
@@ -188,9 +221,11 @@ const cards = [
     "title": "Semantic Precedent Search",
     "subline": "Find the right case language in seconds, not days.",
     "bullets": [
-      "Contextual retrieval across decades of filings & rulings.",
-      "One-click quote insertion into active drafts.",
-      "Risk flags for overlapping regulatory obligations."
+      { text: "Find the right case language", icon: Search },
+      { text: "Contextual retrieval", icon: Archive },
+      { text: "One-click quote insertion", icon: Quote },
+      { text: "Risk flags", icon: TriangleAlert },
+      { text: "95% provenance", icon: Shield }
     ],
     "proof": "95% of cited passages sourced with provenance",
     "cta": "Try a precedent query"
@@ -201,9 +236,11 @@ const cards = [
     "title": "Cross-Regulation Compliance Mapping",
     "subline": "See NEPA, CWA, CAA, ESA, NHPA obligations in one view.",
     "bullets": [
-      "Auto-mapping of triggers, thresholds, dependencies.",
-      "Gap analysis with \"what's missing\" checklist.",
-      "Exportable matrix for reviewers and counsel."
+      { text: "Obligations in one view", icon: Network },
+      { text: "Auto-mapping triggers", icon: MapPin },
+      { text: "Gap analysis", icon: CheckSquare },
+      { text: "Exportable matrix", icon: Table },
+      { text: "Zero-to-matrix fast", icon: Zap }
     ],
     "proof": "Zero-to-matrix in under 60 seconds",
     "cta": "Open compliance matrix"
@@ -214,9 +251,11 @@ const cards = [
     "title": "Automated EA/EIS Drafting",
     "subline": "Generate compliant environmental assessments in hours, not months.",
     "bullets": [
-      "AI-powered section generation with regulatory compliance.",
-      "Real-time citation validation and formatting.",
-      "Collaborative editing with version control."
+      { text: "Generate assessments fast", icon: FileText },
+      { text: "AI-powered generation", icon: Sparkles },
+      { text: "Real-time citation validation", icon: Link },
+      { text: "Collaborative editing", icon: Users },
+      { text: "80% faster", icon: Gauge }
     ],
     "proof": "80% faster than traditional drafting",
     "cta": "Start EA draft"
@@ -227,9 +266,11 @@ const cards = [
     "title": "Public Comment Summarization & Response",
     "subline": "Process thousands of comments with intelligent categorization and response generation.",
     "bullets": [
-      "Automated sentiment analysis and theme extraction.",
-      "Response templates with legal precedent integration.",
-      "Stakeholder communication tracking and reporting."
+      { text: "Process thousands", icon: Inbox },
+      { text: "Sentiment analysis", icon: Smile },
+      { text: "Response templates", icon: Reply },
+      { text: "Stakeholder tracking", icon: UserCheck },
+      { text: "10k+ in 2 hrs", icon: Rocket }
     ],
     "proof": "Process 10,000+ comments in under 2 hours",
     "cta": "Analyze comments"
@@ -240,9 +281,11 @@ const cards = [
     "title": "Audit-Ready Transparency",
     "subline": "Complete documentation trail for every decision and recommendation.",
     "bullets": [
-      "Immutable audit logs with cryptographic verification.",
-      "Decision rationale tracking with source attribution.",
-      "Compliance reporting with regulatory standards."
+      { text: "Documentation trail", icon: FolderOpen },
+      { text: "Immutable logs", icon: Lock },
+      { text: "Decision rationale", icon: ClipboardList },
+      { text: "Compliance reporting", icon: BarChart3 },
+      { text: "100% audit compliance", icon: Award }
     ],
     "proof": "100% audit trail compliance",
     "cta": "View audit logs"
@@ -253,9 +296,11 @@ const cards = [
     "title": "Deployment Flexibility",
     "subline": "Cloud, on-premise, or hybrid deployment options for any security requirement.",
     "bullets": [
-      "Multi-cloud support with data sovereignty controls.",
-      "On-premise installation with air-gapped capabilities.",
-      "Hybrid workflows with seamless data synchronization."
+      { text: "Cloud/on-prem", icon: Cloud },
+      { text: "Multi-cloud sovereignty", icon: Globe },
+      { text: "Air-gapped on-prem", icon: ShieldIcon },
+      { text: "Hybrid sync", icon: RefreshCw },
+      { text: "Deploy in 24 hrs", icon: Rocket }
     ],
     "proof": "Deploy anywhere in under 24 hours",
     "cta": "Choose deployment"

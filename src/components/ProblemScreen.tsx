@@ -1,8 +1,24 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { 
+  DollarSign, 
+  FileText, 
+  Trash2, 
+  RotateCcw, 
+  TrendingDown, 
+  UserMinus, 
+  Gavel, 
+  Layers, 
+  Hourglass, 
+  Calendar, 
+  PenTool, 
+  GitBranch, 
+  Sparkles, 
+  Eye, 
+  UserCheck, 
+  Building2 
+} from 'lucide-react';
 
 export function ProblemScreen() {
   return (
@@ -83,10 +99,10 @@ export function ProblemScreen() {
         <ProblemCard
           title="Consulting Is the Product"
           body={[
-            "$100B+ annual U.S. government consulting spend",
-            "Majority tied to document-heavy workflows",
-            "Billions wasted on drafting, collation, precedent hunting",
-            "The process is predictable — just not automated"
+            { text: "$100B+ spend", icon: DollarSign },
+            { text: "Document-heavy workflows", icon: FileText },
+            { text: "Billions wasted", icon: Trash2 },
+            { text: "Predictable but not automated", icon: RotateCcw }
           ]}
           proof="Consulting Firms Sell Repetition. We Sell Automation."
         />
@@ -95,10 +111,10 @@ export function ProblemScreen() {
         <ProblemCard
           title="Less Money. Fewer People. Same Deadlines."
           body={[
-            "–54% EPA budget cut",
-            "–23% EPA staff reduction", 
-            "Enforcement: –30% civil, –49% criminal, –35% monitoring",
-            "States + tribes inherit backlog as EPA capacity collapses"
+            { text: "–54% budget cut", icon: TrendingDown },
+            { text: "–23% staff reduction", icon: UserMinus },
+            { text: "Enforcement collapse", icon: Gavel },
+            { text: "States inherit backlog", icon: Layers }
           ]}
           proof="Capacity collapse creates systemic delays across environmental review."
         />
@@ -107,9 +123,10 @@ export function ProblemScreen() {
         <ProblemCard
           title="Automate or Accumulate Delay."
           body={[
-            "6–12 months for Environmental Assessments",
-            "4+ years for Environmental Impact Statements",
-            "Manual reviews cannot scale under current constraints"
+            { text: "6–12 month EA delays", icon: Hourglass },
+            { text: "4+ year EIS delays", icon: Calendar },
+            { text: "Manual reviews don't scale", icon: PenTool },
+            { text: "Compounding pipeline delays", icon: GitBranch }
           ]}
           proof="Structural delays compound across the entire regulatory pipeline."
         />
@@ -118,9 +135,10 @@ export function ProblemScreen() {
         <ProblemCard
           title="AI With Audit Trails = Faster, Cheaper, Defensible."
           body={[
-            "Modular, LLM-powered platform for document generation, precedent search, and comment response",
-            "Transparent outputs + human-in-the-loop review",
-            "Direct alignment with OMB AI mandate (M-25-21)"
+            { text: "LLM-powered automation", icon: Sparkles },
+            { text: "Transparent outputs", icon: Eye },
+            { text: "Human-in-the-loop", icon: UserCheck },
+            { text: "OMB AI mandate alignment", icon: Building2 }
           ]}
           proof="Automation advantage delivers compliance that meets federal mandates."
         />
@@ -131,7 +149,7 @@ export function ProblemScreen() {
 
 function ProblemCard({
   title, body, proof, className = ""
-}: { title: string; body: string[]; proof: string; className?: string }) {
+}: { title: string; body: Array<{ text: string; icon: React.ComponentType<{ className?: string }> }>; proof: string; className?: string }) {
   return (
     <motion.article
       className={[
@@ -176,12 +194,15 @@ function ProblemCard({
         
         {/* Body / bullets */}
         <div className="space-y-3 flex-1">
-          {body.map((b, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <CheckCircle2 className="w-4 h-4 text-white/15 mt-1 flex-shrink-0" />
-              <p className="text-base leading-relaxed text-white/75 font-clash font-light" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>{b}</p>
-            </div>
-          ))}
+          {body.map((b, i) => {
+            const IconComponent = b.icon;
+            return (
+              <div key={i} className="flex items-start gap-3">
+                <IconComponent className="w-4 h-4 text-white/15 mt-1 flex-shrink-0" />
+                <p className="text-base leading-relaxed text-white/75 font-clash font-light" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>{b.text}</p>
+              </div>
+            );
+          })}
         </div>
         
         {/* Divider line */}
