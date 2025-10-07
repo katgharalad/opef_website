@@ -587,7 +587,7 @@ export default function Home() {
           {/* Contact Us Button - Perfectly Centered */}
           <div className="pt-4 flex justify-center">
             <Button 
-              onClick={() => window.open('/temp', '_blank')}
+              onClick={() => window.open('/contact_form', '_blank')}
             >
               Contact Us
             </Button>

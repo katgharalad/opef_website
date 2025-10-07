@@ -1,10 +1,25 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: Request) {
   try {
+    // Initialize Resend with environment variable validation
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const contactFrom = process.env.CONTACT_FROM;
+    const contactTo = process.env.CONTACT_TO;
+
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY is not set');
+      return NextResponse.json({ ok: false, error: "Email service not configured" }, { status: 500 });
+    }
+
+    if (!contactFrom || !contactTo) {
+      console.error('CONTACT_FROM or CONTACT_TO is not set');
+      return NextResponse.json({ ok: false, error: "Email configuration incomplete" }, { status: 500 });
+    }
+
+    const resend = new Resend(resendApiKey);
+
     const body = await req.json();
     const { fullName, email, phone, org, role, message, topics, consent } = body;
 
@@ -13,15 +28,15 @@ export async function POST(req: Request) {
     }
 
     console.log('Sending emails with config:', {
-      from: process.env.CONTACT_FROM,
-      to: process.env.CONTACT_TO,
+      from: contactFrom,
+      to: contactTo,
       customerEmail: email
     });
 
     // Founder email
     const founderEmailResult = await resend.emails.send({
-      from: process.env.CONTACT_FROM!,
-      to: process.env.CONTACT_TO!,
+      from: contactFrom,
+      to: contactTo,
       subject: `🔔 New OPEF Contact Form Submission — ${fullName}`,
       html: `
         <!DOCTYPE html>
@@ -84,7 +99,7 @@ export async function POST(req: Request) {
 
     // Auto-reply to sender (confirmation email)
     const confirmationEmailResult = await resend.emails.send({
-      from: process.env.CONTACT_FROM!,
+      from: contactFrom,
       to: email,
       subject: "Thank you for contacting OPEF — We'll be in touch soon",
       html: `

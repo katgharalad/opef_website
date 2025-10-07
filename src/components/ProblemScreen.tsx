@@ -104,6 +104,7 @@ export function ProblemScreen() {
             { text: "Billions wasted", icon: Trash2 },
             { text: "Predictable but not automated", icon: RotateCcw }
           ]}
+          benefit="Consultants profit from complexity—we eliminate it with AI automation."
           proof="Consulting Firms Sell Repetition. We Sell Automation."
         />
         
@@ -116,6 +117,7 @@ export function ProblemScreen() {
             { text: "Enforcement collapse", icon: Gavel },
             { text: "States inherit backlog", icon: Layers }
           ]}
+          benefit="Resource constraints create systemic bottlenecks—AI multiplies capacity without adding headcount."
           proof="Capacity collapse creates systemic delays across environmental review."
         />
         
@@ -128,6 +130,7 @@ export function ProblemScreen() {
             { text: "Manual reviews don't scale", icon: PenTool },
             { text: "Compounding pipeline delays", icon: GitBranch }
           ]}
+          benefit="Manual processes create exponential delays—automation breaks the bottleneck cycle."
           proof="Structural delays compound across the entire regulatory pipeline."
         />
         
@@ -140,6 +143,7 @@ export function ProblemScreen() {
             { text: "Human-in-the-loop", icon: UserCheck },
             { text: "OMB AI mandate alignment", icon: Building2 }
           ]}
+          benefit="AI delivers speed without sacrificing accountability—every output is traceable and defensible."
           proof="Automation advantage delivers compliance that meets federal mandates."
         />
       </motion.div>
@@ -148,8 +152,8 @@ export function ProblemScreen() {
 }
 
 function ProblemCard({
-  title, body, proof, className = ""
-}: { title: string; body: Array<{ text: string; icon: React.ComponentType<{ className?: string }> }>; proof: string; className?: string }) {
+  title, body, proof, benefit, className = ""
+}: { title: string; body: Array<{ text: string; icon: React.ComponentType<{ className?: string }> }>; proof: string; benefit: string; className?: string }) {
   return (
     <motion.article
       className={[
@@ -189,7 +193,7 @@ function ProblemCard({
         
         {/* One-line subhead */}
         <p className="text-base text-white/70 font-clash font-light leading-relaxed" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
-          Clear benefit statement or punchline.
+          {benefit}
         </p>
         
         {/* Body / bullets */}
